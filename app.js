@@ -1,15 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const WebSocket = require('ws');
 const axios = require('axios');
+const { Server } = require('socket.io');
 
 const app = express();
 app.use(express.json());
 const server = http.createServer(app);
-const ws = new WebSocket.Server({ server });
 
-const io = require('socket.io')(server, {
+const io = new Server(server, {
     cors: {
         origin: '*',
         methods: ['GET', 'POST'],
@@ -28,14 +27,16 @@ function getCurrentTime() {
 }
 
 io.on('connection', (socket) => {
-    const origin = socket.handshake.query.clientUrl;
-
-    console.log(`[${getCurrentTime()}] Nuevo cliente conectado desde: ${origin}`);
-
+    const origin = socket.handshake.query.clientUrl || 'unknown';
+    const connectionLog = `[${getCurrentTime()}] Nuevo cliente conectado desde: ${origin}`;
+    console.log(connectionLog);
+    io.emit('logs', { message: connectionLog });
     nodeSocketMap.set(origin, socket.id);
 
     socket.on('disconnect', () => {
-        console.log(`[${getCurrentTime()}] Cliente ${origin} desconectado.`);
+        const disconnectionLog = `[${getCurrentTime()}] Cliente ${origin} desconectado.`;
+        console.log(disconnectionLog);
+        io.emit('logs', { message: disconnectionLog });
         nodeSocketMap.delete(origin);
     });
 });
