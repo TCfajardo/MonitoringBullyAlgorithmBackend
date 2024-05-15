@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const { exec } = require('child_process'); 
 const http = require('http');
 const axios = require('axios');
 const { Server } = require('socket.io');
@@ -19,7 +20,9 @@ const io = new Server(server, {
 
 // Lista de nodos para monitoreo
 const SERVERS = [];
-let LEADER_URL = null; // Variable para almacenar la URL del líder
+let LEADER_URL = null;
+let currentPort = 5010; // Inicializar el puerto base
+let usedNodeIDs = []; // Almacenar los IDs de los nodos ya utilizados
 
 const nodeSocketMap = new Map();
 function getCurrentTime() {
@@ -112,8 +115,6 @@ function updateServers(ip, port, leader) {
     }
 }
 
-
-
 app.post('/register-node', (req, res) => {
     if (!req.body || !req.body.ip || !req.body.port) {
         return res.status(400).send('Solicitud de cuerpo no válido');
@@ -132,6 +133,38 @@ app.post('/leader-update', (req, res) => {
     res.status(200).send('URL del líder actualizada exitosamente en el monitor');
 });
 
+// Endpoint para crear un nuevo nodo
+const path = require('path');
+
+app.post('/crear-nuevo-nodo', (req, res) => {
+    const NODE_PORT = process.env.NODE_PORT++;
+    const NODE_IP = process.env.NODE_IP || 'localhost';
+    let NODE_ID;
+
+    do {
+        NODE_ID = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
+    } while (usedNodeIDs.includes(NODE_ID));
+    usedNodeIDs.push(NODE_ID);
+
+    const IP_SW = process.env.IP_SW || 'http://localhost:4000';
+
+    const filePath = path.join(__dirname, '../BullyNodes/bully_nodes.js'); // Ruta completa al archivo bully_nodes.js
+    const command = `start cmd /k node ${filePath} ${NODE_PORT} ${NODE_IP} ${NODE_ID} ${IP_SW}`;
+
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error al ejecutar el comando: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Error en la salida estándar: ${stderr}`);
+            return;
+        }
+        console.log(`Nodo creado con éxito. Puerto: ${NODE_PORT}, ID: ${NODE_ID}`);
+    });
+
+    res.send('Nuevo nodo en proceso de creación...');
+});
 
 
 const port = process.env.PORT || 4000;
