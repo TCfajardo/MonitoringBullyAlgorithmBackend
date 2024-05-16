@@ -101,6 +101,7 @@ io.on('connection', (socket) => {
 async function updateNodes() {
     try {
         io.emit('servers_list', SERVERS);
+        io.emit('node_data_to_vue', SERVERS);
         console.log(`[${getCurrentTime()}] Enviando lista de servidores actualizada a todos los nodos`);
     } catch (error) {
         console.error(`Error al enviar lista de servidores actualizada: ${error.message}`);
