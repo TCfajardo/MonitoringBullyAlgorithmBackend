@@ -47,6 +47,19 @@ io.on('connection', (socket) => {
         io.emit('servers_list', SERVERS);
     });
 
+    socket.on('update-node-info', (data) => {
+        const { clientUrl, imLeader } = data;
+        const nodeIndex = SERVERS.findIndex(node => node.clientUrl === clientUrl);
+        if (nodeIndex !== -1) {
+            SERVERS[nodeIndex].imLeader = imLeader;
+            // Después de actualizar la información del nodo, enviar la lista actualizada a todos los clientes
+            io.emit('servers_list', SERVERS);
+            console.log(`Información del nodo actualizada: ${clientUrl} es líder: ${imLeader}`);
+        } else {
+            console.error(`No se encontró el nodo con la URL: ${clientUrl}`);
+        }
+    });
+
     // Manejar mensajes recibidos del nodo
     socket.on('node_data', async (data) => {
         console.log('Datos recibidos del nodo:', data);
