@@ -82,7 +82,7 @@ io.on('connection', (socket) => {
     socket.on('stop_node', (nodeId) => {
         const node = SERVERS.find(node => node.id === nodeId);
         if (node) {
-            node.isActive = false; 
+            node.isActive = false;
             // Enviar solicitud al cliente Node para cambiar el estado
             axios.post(`${node.clientUrl}/set-inactive`)
                 .then(response => {
@@ -97,6 +97,16 @@ io.on('connection', (socket) => {
         }
     });
 });
+
+async function updateNodes() {
+    try {
+        io.emit('servers_list', SERVERS);
+        console.log(`[${getCurrentTime()}] Enviando lista de servidores actualizada a todos los nodos`);
+    } catch (error) {
+        console.error(`Error al enviar lista de servidores actualizada: ${error.message}`);
+    }
+}
+setInterval(updateNodes, 3000);
 
 async function isNodeActive(node) {
     try {
