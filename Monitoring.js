@@ -41,6 +41,12 @@ io.on('connection', (socket) => {
     // Enviar la lista de servidores actualizada al nuevo nodo cuando se conecta
     socket.emit('servers_list', SERVERS);
 
+    socket.on('update-nodes-list', (data) => {
+        SERVERS = data.nodes;
+        // Envía la lista actualizada de nodos a todos los clientes conectados
+        io.emit('servers_list', SERVERS);
+    });
+
     // Manejar mensajes recibidos del nodo
     socket.on('node_data', async (data) => {
         console.log('Datos recibidos del nodo:', data);
@@ -99,7 +105,7 @@ async function pingNodos() {
                 console.error(`[${getCurrentTime()}] Error en el ping, nodo ${node.clientUrl} no está activo`);
             }
             console.log('node ping ', node);
-            node.isActive = isActive; // Actualizar el estado del nodo después de verificarlo
+            node.isActive = isActive;
         } catch (error) {
             console.error(`Error al verificar el estado del nodo ${node.clientUrl}: ${error.message}`);
             node.isActive = false;
