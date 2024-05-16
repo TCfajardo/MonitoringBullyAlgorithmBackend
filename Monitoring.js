@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { exec } = require('child_process'); 
+const { exec } = require('child_process');
 const http = require('http');
 const { Server } = require('socket.io');
 const axios = require('axios');
@@ -151,42 +151,42 @@ const path = require('path');
 const generateNodeId = (usedNodeIDs) => {
     let nodeId;
     do {
-      nodeId = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
+        nodeId = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
     } while (usedNodeIDs.includes(nodeId));
     usedNodeIDs.push(nodeId);
     return nodeId;
-  };
+};
 
-  app.post('/crear-nuevo-nodo', (req, res) => {
+app.post('/crear-nuevo-nodo', (req, res) => {
     const usedNodeIDs = [parseInt(process.env.NODE_ID)]; // Initialize with existing NODE_ID
     const NODE_PORT = parseInt(process.env.NODE_PORT) + 1;
     const NODE_IP = process.env.NODE_IP || 'localhost';
     const NODE_ID = generateNodeId(usedNodeIDs);
-  
+
     console.log('Nuevo NODE_ID:', NODE_ID);
-  
+
     const IP_SW = process.env.IP_SW || 'http://localhost:4000';
-  
+
     const filePath = path.join(__dirname, '../BullyNodes/BullyNodes.js');
     const command = `start cmd /k node ${filePath} ${NODE_PORT} ${NODE_IP} ${NODE_ID} ${IP_SW}`;
-  
+
     exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error al ejecutar el comando: ${error.message}`);
-        return;
-      }
-      if (stderr) {
-        console.error(`Error en la salida estándar: ${stderr}`);
-        return;
-      }
-      console.log(`Nodo creado con éxito. Puerto: ${NODE_PORT}, ID: ${NODE_ID}`);
+        if (error) {
+            console.error(`Error al ejecutar el comando: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Error en la salida estándar: ${stderr}`);
+            return;
+        }
+        console.log(`Nodo creado con éxito. Puerto: ${NODE_PORT}, ID: ${NODE_ID}`);
     });
-  
+
     process.env.NODE_PORT = NODE_PORT.toString();
-    process.env.NODE_ID = NODE_ID.toString(); // Update NODE_ID in env
-  
+    process.env.NODE_ID = NODE_ID.toString();
+
     res.send('Nuevo nodo en proceso de creación...');
-  });
+});
 
 
 const port = process.env.PORT || 4000;
