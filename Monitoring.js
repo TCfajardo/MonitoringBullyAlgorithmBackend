@@ -55,6 +55,7 @@ io.on('connection', (socket) => {
             // Después de actualizar la información del nodo, enviar la lista actualizada a todos los clientes
             io.emit('servers_list', SERVERS);
             console.log(`Información del nodo actualizada: ${clientUrl} es líder: ${imLeader}`);
+            io.emit('logs', { message: `[${getCurrentTime()}] Nodo ${clientUrl} es líder: ${imLeader}` });
         } else {
             console.error(`No se encontró el nodo con la URL: ${clientUrl}`);
         }
@@ -92,6 +93,7 @@ io.on('connection', (socket) => {
                     console.error(`Error al enviar solicitud al cliente Node: ${error.message}`);
                 });
             console.log(`[${getCurrentTime()}] Nodo ${node.clientUrl} apagado.`);
+            io.emit('logs', { message: `[${getCurrentTime()}] Nodo ${node.clientUrl} apagado` });
             console.log('Servers data', SERVERS);
             socket.emit('servers_list', SERVERS);
         }
